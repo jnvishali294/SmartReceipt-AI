@@ -1051,37 +1051,41 @@ with tab3:
             "📭 No expense history found. "
             "Upload and analyze a receipt first."
         )
-        # Tab 4: AI Expense Assistant
+      # Tab 4: AI Assistant
 with tab4:
 
     st.markdown("## 🤖 AI Expense Assistant")
     st.caption("Ask questions about your recorded expenses")
 
     user_question = st.text_input(
-    "💬 Ask your expense question",
-    placeholder="Example: Where did I spend the most?",
-    key="ai_expense_question"
-)
+        "💬 Ask your expense question",
+        placeholder="Example: Where did I spend the most?",
+        key="ai_expense_question"
+    )
 
     if st.button(
-    "✨ Ask AI",
-    type="primary",
-    key="ask_ai_button"
-):
+        "✨ Ask AI",
+        type="primary",
+        key="ask_ai_button"
+    ):
 
         if not user_question.strip():
+
             st.warning("Please enter a question.")
 
         else:
+
             expense_data = load_expenses()
 
             if expense_data.empty:
+
                 st.info(
                     "No expense data available. "
                     "Process some receipts first."
                 )
 
             else:
+
                 expense_context = expense_data.to_string(
                     index=False
                 )
@@ -1089,9 +1093,6 @@ with tab4:
                 assistant_prompt = f"""
 You are SmartReceipt AI, an intelligent personal
 expense analysis assistant.
-
-Analyze the user's expense records and answer the
-user's question clearly and accurately.
 
 Expense records:
 
@@ -1105,23 +1106,48 @@ Rules:
 - Do not invent transactions.
 - Give concise and useful answers.
 - Mention amounts in Indian Rupees (₹).
-- If the data is insufficient, clearly say so.
 """
 
-                with st.spinner("🤖 AI is analyzing your expenses..."):
+                with st.spinner(
+                    "🤖 AI is analyzing your expenses..."
+                ):
 
                     try:
-                        client = genai.Client(api_key=API_KEY)
-                        response = client.models.generate_content(
-                            model="gemini-3.8-flash",
-                            contents=assistant_prompt
-                  )
+
+                        client = genai.Client(
+                            api_key=API_KEY
+                        )
+
+                        response = None
+
+                        for attempt in range(3):
+
+                            try:
+
+                                response = client.models.generate_content(
+                                    model="gemini-3.8-flash",
+                                    contents=assistant_prompt
+                                )
+
+                                break
+
+                            except Exception as e:
+
+                                if "503" in str(e) and attempt < 2:
+
+                                    import time
+                                    time.sleep(8)
+
+                                else:
+
+                                    raise
 
                         st.markdown("### 💡 AI Insight")
 
                         st.write(response.text)
 
                     except Exception as e:
+
                         st.error(
                             f"AI Assistant Error: {e}"
                         )
