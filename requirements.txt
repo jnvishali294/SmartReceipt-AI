@@ -1,0 +1,6 @@
+streamlit==1.65.0
+google-genai==2.28.0
+pillow
+pandas
+twilio==9.11.2
+reportlab==5.0.1
